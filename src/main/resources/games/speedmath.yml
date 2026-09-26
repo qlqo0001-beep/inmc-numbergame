@@ -1,0 +1,56 @@
+# 빠른 계산 - 기본 제공 게임
+#
+# 인게임에서 설정을 바꾸면 이 파일이 자동으로 다시 써집니다.
+#   /숫자게임 관리 → 게임 목록 → 빠른 계산
+# 손편집 후에는 /숫자게임 리로드 를 실행하세요.
+
+type: SPEED_MATH
+display-name: 빠른 계산
+enabled: true
+order: 40
+icon: minecraft:clock
+description:
+  - <gray><white>60초</white> 안에 사칙연산 문제를 최대한 많이 푸세요.</gray>
+  - <dark_gray>답은 채팅으로 입력합니다. 시간이 끝나면 맞힌 개수가 기록됩니다.</dark_gray>
+
+settings:
+  operations: ADD_SUB
+  max-operand: 30
+  time-limit: 60s
+  mistakes-allowed: 3
+  score-per-correct: 10
+  # 다이얼로그는 제자리 갱신이 안 돼 문제마다 창이 닫혔다 다시 열립니다.
+  # 빠른 계산처럼 연속으로 푸는 게임은 액션바+채팅이 훨씬 매끄럽습니다.
+  #   DIALOG = 창,  FAST = 액션바에 문제 + 채팅으로 답
+  input-mode: FAST
+
+entry:
+  daily-limit: 0
+  daily-reset-hour: 4
+  cooldown: 0s
+  refund-on-fail: false
+  fee:
+    money: 0.0
+    amount: 1
+
+ranking:
+  mode: CUMULATIVE_SCORE
+  min-plays: 1
+  board-size: 50
+  announce-reset: true
+  reset:
+    policy: WEEKLY
+    hour: 4
+    minute: 0
+    weekday: MONDAY
+    day-of-month: 1
+    interval: 7d
+    timezone: ''
+
+# 보상은 비워둔 채로 시작합니다.
+#   관리 → 보상 설정   에서 아이템을 올려 등록하고,
+#   관리 → 순위 보상   에서 시즌 종료 보상을 지정하세요.
+rewards:
+  triggers: {}
+  record-tiers: {}
+  rank-brackets: {}

@@ -1,0 +1,11 @@
+build/
+.kotlin/
+bin/
+.gradle/
+.idea/
+*.iml
+out/
+
+# ./gradlew runServer 가 만드는 테스트 서버.
+# Paper 본체와 월드 데이터가 들어가므로 저장소에 넣지 않습니다.
+run/

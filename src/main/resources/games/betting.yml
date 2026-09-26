@@ -1,0 +1,57 @@
+# 홀짝 베팅 - 기본 제공 게임
+#
+# ⚠ 기본값은 enabled: false 입니다.
+#   실제 서버 화폐가 오가는 게임이라, 배당과 한도를 확인하기 전에는 켜지 않는 편이 안전합니다.
+#   Vault(경제 플러그인)가 없으면 목록에 아예 나타나지 않습니다.
+#
+#   /숫자게임 관리 → 게임 목록 → 홀짝 베팅 → 기본 설정 에서 활성화하세요.
+
+type: BETTING
+display-name: 홀짝 베팅
+enabled: false
+order: 80
+icon: minecraft:gold_ingot
+description:
+  - <gray>홀짝·하이로우·주사위에 돈을 걸고 배당을 받습니다.</gray>
+  - <dark_gray>랭킹은 시즌 누적 순수익 기준입니다.</dark_gray>
+
+settings:
+  bet-types: ALL
+  min-bet: 100.0
+  max-bet: 10000.0
+  # 2.0 이면 서버 수익이 0입니다. 1.95 는 약 2.5% 를 서버가 가져갑니다.
+  payout-even: 1.95
+  # 6.0 이면 서버 수익이 0입니다. 5.0 은 약 16% 를 서버가 가져갑니다.
+  payout-dice: 5.0
+  streak-bonus: 0.05
+  streak-bonus-cap: 0.5
+  rounds: 5
+  time-limit: 10m
+
+entry:
+  daily-limit: 10
+  daily-reset-hour: 4
+  cooldown: 0s
+  refund-on-fail: false
+  fee:
+    money: 0.0
+    amount: 1
+
+ranking:
+  mode: CUMULATIVE_SCORE
+  min-plays: 1
+  board-size: 50
+  announce-reset: true
+  reset:
+    policy: WEEKLY
+    hour: 4
+    minute: 0
+    weekday: MONDAY
+    day-of-month: 1
+    interval: 7d
+    timezone: ''
+
+rewards:
+  triggers: {}
+  record-tiers: {}
+  rank-brackets: {}

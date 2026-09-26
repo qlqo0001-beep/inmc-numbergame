@@ -1,0 +1,54 @@
+# 31 게임 - 기본 제공 게임
+#
+# 인게임에서 설정을 바꾸면 이 파일이 자동으로 다시 써집니다.
+#   /숫자게임 관리 → 게임 목록 → 31 게임
+
+type: NIM
+display-name: 31 게임
+enabled: true
+order: 70
+icon: minecraft:target
+description:
+  - <gray>서버와 번갈아 <white>1~3</white> 을 더합니다.</gray>
+  - <dark_gray>31 을 말하는 쪽이 집니다. 3판 중 더 많이 이기세요.</dark_gray>
+
+settings:
+  target: 31
+  max-add: 3
+  rounds: 3
+  # PERFECT 는 선공을 잡으면 절대 지지 않습니다. NORMAL 을 권장합니다.
+  ai-level: NORMAL
+  first-move: RANDOM
+  time-limit: 5m
+  score-per-win: 50
+
+entry:
+  daily-limit: 0
+  daily-reset-hour: 4
+  cooldown: 0s
+  refund-on-fail: false
+  fee:
+    money: 0.0
+    amount: 1
+
+ranking:
+  mode: CUMULATIVE_SCORE
+  min-plays: 1
+  board-size: 50
+  announce-reset: true
+  reset:
+    policy: WEEKLY
+    hour: 4
+    minute: 0
+    weekday: MONDAY
+    day-of-month: 1
+    interval: 7d
+    timezone: ''
+
+# 보상은 비워둔 채로 시작합니다.
+#   관리 → 보상 설정   에서 아이템을 올려 등록하고,
+#   관리 → 순위 보상   에서 시즌 종료 보상을 지정하세요.
+rewards:
+  triggers: {}
+  record-tiers: {}
+  rank-brackets: {}

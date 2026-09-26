@@ -1,0 +1,50 @@
+# 블랙잭 21 - 기본 제공 게임
+#
+# ⚠ 기본값은 enabled: false 입니다. (betting.yml 의 설명 참고)
+
+type: BLACKJACK
+display-name: 블랙잭 21
+enabled: false
+order: 90
+icon: minecraft:paper
+description:
+  - <gray>21을 넘기지 않고 딜러보다 높은 수를 만드세요.</gray>
+  - <dark_gray>에이스는 버스트되지 않는 한 11로 셉니다.</dark_gray>
+
+settings:
+  min-bet: 100.0
+  max-bet: 10000.0
+  blackjack-payout: 1.5
+  # 낮출수록 딜러가 자주 버스트해 플레이어가 유리해집니다. 17 이 표준입니다.
+  dealer-stands-on: 17
+  allow-double: true
+  rounds: 5
+  time-limit: 10m
+
+entry:
+  daily-limit: 10
+  daily-reset-hour: 4
+  cooldown: 0s
+  refund-on-fail: false
+  fee:
+    money: 0.0
+    amount: 1
+
+ranking:
+  mode: CUMULATIVE_SCORE
+  min-plays: 1
+  board-size: 50
+  announce-reset: true
+  reset:
+    policy: WEEKLY
+    hour: 4
+    minute: 0
+    weekday: MONDAY
+    day-of-month: 1
+    interval: 7d
+    timezone: ''
+
+rewards:
+  triggers: {}
+  record-tiers: {}
+  rank-brackets: {}

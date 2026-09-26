@@ -1,0 +1,44 @@
+name: inmc-numbergame
+version: '${version}'
+main: com.inmc.numbergame.NumberGamePlugin
+api-version: '${apiVersion}'   # build.gradle.kts 의 inmc { paper } 에서 유도됨
+description: 숫자야구·업다운 등 숫자 미니게임 모음 - 다이얼로그 진행, 보상·랭킹·시즌 초기화까지 의존성 없이
+authors: [ INMC ]
+
+# load: OMIT on purpose.
+#
+# Declaring BEFORE for every integration is how you get Paper reporting a dependency cycle
+# (inmc-numbergame -> MMOItems -> nightcore -> ItemsAdder -> nightcore) and breaking it by
+# silently dropping one of our edges. None of these are needed at load time: every hook is
+# resolved reflectively through the owning plugin's own classloader, and IntegrationListener
+# re-probes whenever one of them enables, so load order does not matter at all.
+dependencies:
+  server:
+    # 필수 의존은 이것 하나뿐이다. core 가 kotlin-stdlib 과 공용 프레임워크를 들고 있어서
+    # join-classpath 없이는 클래스가 보이지 않는다 — 없으면 Paper 가 아예 우리를 켜지 않는다.
+    inmc-core:      { load: BEFORE, required: true,  join-classpath: true }
+    Vault:
+      load: OMIT
+      required: false
+      join-classpath: true
+    PlaceholderAPI:
+      load: OMIT
+      required: false
+      join-classpath: true
+    MMOItems:
+      load: OMIT
+      required: false
+      join-classpath: true
+    MythicLib:
+      load: OMIT
+      required: false
+      join-classpath: true
+    ItemsAdder:
+      load: OMIT
+      required: false
+      join-classpath: true
+
+permissions:
+  ng.admin:
+    description: 숫자게임 관리 권한 (게임·보상·랭킹 설정, 플레이 초기화)
+    default: op

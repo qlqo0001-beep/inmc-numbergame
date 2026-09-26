@@ -1,0 +1,53 @@
+# 숫자 기억 - 기본 제공 게임
+#
+# 인게임에서 설정을 바꾸면 이 파일이 자동으로 다시 써집니다.
+#   /숫자게임 관리 → 게임 목록 → 숫자 기억
+
+type: MEMORY
+display-name: 숫자 기억
+enabled: true
+order: 50
+icon: minecraft:book
+description:
+  - <gray>잠깐 보여주는 숫자를 그대로 입력하세요.</gray>
+  - <dark_gray>한 단계 통과할 때마다 한 자리씩 길어집니다.</dark_gray>
+
+settings:
+  start-length: 3
+  max-length: 12
+  # 숫자가 사라지기까지의 시간. 자릿수가 늘어도 이 시간은 그대로라 뒤로 갈수록 어려워집니다.
+  show-time: 3s
+  answer-time: 15s
+  time-limit: 5m
+  score-per-level: 15
+
+entry:
+  daily-limit: 0
+  daily-reset-hour: 4
+  cooldown: 0s
+  refund-on-fail: false
+  fee:
+    money: 0.0
+    amount: 1
+
+ranking:
+  mode: CUMULATIVE_SCORE
+  min-plays: 1
+  board-size: 50
+  announce-reset: true
+  reset:
+    policy: WEEKLY
+    hour: 4
+    minute: 0
+    weekday: MONDAY
+    day-of-month: 1
+    interval: 7d
+    timezone: ''
+
+# 보상은 비워둔 채로 시작합니다.
+#   관리 → 보상 설정   에서 아이템을 올려 등록하고,
+#   관리 → 순위 보상   에서 시즌 종료 보상을 지정하세요.
+rewards:
+  triggers: {}
+  record-tiers: {}
+  rank-brackets: {}

@@ -1,0 +1,55 @@
+# 4자리 숫자야구 - 기본 제공 게임
+#
+# 이 파일은 인게임에서 설정을 바꾸면 자동으로 다시 써집니다.
+#   /숫자게임 관리 → 게임 목록 → 숫자야구 4자리
+# 손으로 고쳐도 되지만, 서버를 켜둔 채 고치면 다음 저장 때 덮어써집니다.
+# 손편집 후에는 /숫자게임 리로드 를 실행하세요.
+
+type: BASEBALL
+display-name: 숫자야구 4자리
+enabled: true
+order: 20
+icon: minecraft:snowball
+description:
+  - <gray>서로 다른 <white>4자리</white> 숫자를 맞히세요.</gray>
+  - <dark_gray>자리와 숫자가 모두 맞으면 S, 숫자만 맞으면 B 입니다.</dark_gray>
+
+settings:
+  digits: 4
+  allow-duplicate: false
+  allow-leading-zero: false
+  max-attempts: 12
+  time-limit: 7m
+  score-base: 160
+  score-per-spare-attempt: 30
+
+entry:
+  daily-limit: 0
+  daily-reset-hour: 4
+  cooldown: 0s
+  refund-on-fail: false
+  fee:
+    money: 0.0
+    amount: 1
+
+ranking:
+  mode: BEST_RECORD
+  min-plays: 1
+  board-size: 50
+  announce-reset: true
+  reset:
+    policy: WEEKLY
+    hour: 4
+    minute: 0
+    weekday: MONDAY
+    day-of-month: 1
+    interval: 7d
+    timezone: ''
+
+# 보상은 비워둔 채로 시작합니다.
+#   관리 → 보상 설정   에서 아이템을 올려 등록하고,
+#   관리 → 순위 보상   에서 시즌 종료 보상을 지정하세요.
+rewards:
+  triggers: {}
+  record-tiers: {}
+  rank-brackets: {}

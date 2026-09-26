@@ -1,0 +1,53 @@
+# 1~100 업다운 - 기본 제공 게임
+#
+# 이 파일은 인게임에서 설정을 바꾸면 자동으로 다시 써집니다.
+#   /숫자게임 관리 → 게임 목록 → 업다운 1~100
+# 손편집 후에는 /숫자게임 리로드 를 실행하세요.
+
+type: UPDOWN
+display-name: 업다운 1~100
+enabled: true
+order: 30
+icon: minecraft:comparator
+description:
+  - <gray><white>1 ~ 100</white> 사이의 숫자를 맞히세요.</gray>
+  - <dark_gray>입력할 때마다 위인지 아래인지 알려줍니다.</dark_gray>
+
+settings:
+  range-min: 1
+  range-max: 100
+  # 7회면 이분탐색으로 100개 범위를 항상 좁힐 수 있습니다.
+  # 범위를 넓히면 관리 화면이 필요한 최소 횟수를 계산해서 알려줍니다.
+  max-attempts: 7
+  narrow-range: true
+  time-limit: 3m
+  score-base: 80
+  score-per-spare-attempt: 25
+
+entry:
+  daily-limit: 0
+  daily-reset-hour: 4
+  cooldown: 0s
+  refund-on-fail: false
+  fee:
+    money: 0.0
+    amount: 1
+
+ranking:
+  mode: BEST_RECORD
+  min-plays: 1
+  board-size: 50
+  announce-reset: true
+  reset:
+    policy: WEEKLY
+    hour: 4
+    minute: 0
+    weekday: MONDAY
+    day-of-month: 1
+    interval: 7d
+    timezone: ''
+
+rewards:
+  triggers: {}
+  record-tiers: {}
+  rank-brackets: {}

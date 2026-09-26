@@ -1,0 +1,56 @@
+# 로또 - 기본 제공 게임 (서버 전체 추첨 이벤트)
+#
+# 이 게임은 혼자 하는 게 아니라 주기마다 서버 전체를 한 번에 정산합니다.
+#   /숫자게임 로또   → 번호를 고르고 참가
+#   추첨 주기가 되면 자동으로 추첨되고 채팅으로 결과가 공지됩니다.
+#
+# 당첨 보상은 [순위 보상] 구간을 그대로 씁니다.
+#   6개 일치 = 1위, 5개 일치 = 2위, 4개 일치 = 3위, 3개 일치 = 4위
+#   /숫자게임 관리 → 게임 목록 → 로또 → 순위 보상 에서 등수별 보상을 등록하세요.
+#   보상을 등록하지 않으면 추첨은 되지만 아무것도 지급되지 않습니다.
+
+type: LOTTO
+display-name: 로또
+enabled: true
+order: 100
+icon: minecraft:emerald
+description:
+  - <gray><white>1~45</white> 중 <white>6개</white>를 고르고 추첨을 기다리세요.</gray>
+  - <dark_gray>3개 이상 맞으면 등수에 듭니다.</dark_gray>
+
+settings:
+  pool-size: 45
+  pick-count: 6
+  min-match: 3
+  draw-interval: 1d
+  # Vault 가 없으면 무료로 취급됩니다.
+  ticket-price: 1000.0
+  score-per-match: 20
+
+entry:
+  daily-limit: 0
+  daily-reset-hour: 4
+  cooldown: 0s
+  refund-on-fail: false
+  fee:
+    money: 0.0
+    amount: 1
+
+ranking:
+  mode: CUMULATIVE_SCORE
+  min-plays: 1
+  board-size: 50
+  announce-reset: true
+  reset:
+    policy: WEEKLY
+    hour: 4
+    minute: 0
+    weekday: MONDAY
+    day-of-month: 1
+    interval: 7d
+    timezone: ''
+
+rewards:
+  triggers: {}
+  record-tiers: {}
+  rank-brackets: {}

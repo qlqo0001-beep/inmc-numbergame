@@ -118,15 +118,11 @@ class PlayService(private val ng: Ng) :
         return null
     }
 
+    /** 가방과 배낭(core CarriedStorage — 2026-09-30)의 참가 아이템. 옛 아이템과 새 아이템에 둘 다 맞는 묶음도 한 번만 센다. */
     private fun countMatching(player: Player, def: GameDefinition): Int {
         val spec = def.entry.feeItem ?: return 0
-        var total = 0
-        for (stack in player.inventory.storageContents) {
-            if (stack == null) continue
-            val old = NgRoles.legacy[def.id]
-            if (ng.itemMatcher.matches(stack, spec) || (old != null && ng.itemMatcher.matches(stack, old))) total += stack.amount
-        }
-        return total
+        val old = NgRoles.legacy[def.id]
+        return ng.itemMatcher.count(player) { ng.itemMatcher.matches(it, spec) || (old != null && ng.itemMatcher.matches(it, old)) }
     }
 
     /** Takes the fee. Only call after [check] returned null; returns false if something raced. */

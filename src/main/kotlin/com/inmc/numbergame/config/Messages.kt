@@ -40,6 +40,7 @@ class Messages(values: Map<String, String>) : MessageCatalog<Ph>(values, DEFAULT
             "entry-daily-limit" to "<red>{게임이름} 은(는) 오늘 {개수}회까지만 플레이할 수 있습니다.</red>",
             "entry-cooldown" to "<red>{시간} 후에 다시 플레이할 수 있습니다.</red>",
             "entry-need-money" to "<red>참가비 {금액}원이 필요합니다.</red>",
+            "entry-need-stake" to "<red>{게임이름} 은(는) 한 판에 최소 {금액}원을 걸어야 합니다 — 소지금이 모자라 시작하지 않았습니다(횟수는 그대로).</red>",
             "entry-need-item" to "<red>참가하려면 {아이템} {수량}개가 필요합니다.</red>",
             "entry-paid-money" to "<gray>참가비 <gold>{금액}원</gold>을 지불했습니다.</gray>",
             "entry-paid-item" to "<gray>{아이템} {수량}개를 사용했습니다.</gray>",

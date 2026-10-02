@@ -51,6 +51,13 @@ interface GameEngine {
 
     /** False when the game cannot run right now (e.g. betting with no economy installed). */
     fun available(def: GameDefinition): Boolean = true
+
+    /**
+     * The least a player must be able to stake for one round, for games that bet inside the session (betting,
+     * blackjack); 0 for the rest. Checked before the session starts - starting counts against the daily
+     * allowance, and a player who cannot cover a single bet would spend a play on a game they cannot play.
+     */
+    fun minimumStake(def: GameDefinition): Double = 0.0
 }
 
 /** Engine-specific puzzle state. Must survive a restart, so it serialises itself. */

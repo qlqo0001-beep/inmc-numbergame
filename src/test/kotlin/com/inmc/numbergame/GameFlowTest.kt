@@ -359,4 +359,17 @@ class GameFlowTest {
 
         assertEquals(75L, play.score, "포기 시 넘겨줄 점수가 세션에 없습니다")
     }
+
+    @Test
+    fun `판 안에서 거는 게임만 최소 판돈을 요구한다 — 시작 전에 소지금을 본다`() {
+        val betting = def(GameType.BETTING)
+        val blackjack = def(GameType.BLACKJACK)
+        assertEquals(betting.settings[BettingEngine.MIN_BET], betting.engine.minimumStake(betting))
+        assertEquals(blackjack.settings[com.inmc.numbergame.game.engine.BlackjackEngine.MIN_BET], blackjack.engine.minimumStake(blackjack))
+        assertTrue(betting.engine.minimumStake(betting) > 0.0, "기본 최소 판돈이 0 이면 검사가 무의미하다")
+        for (type in GameType.entries.filter { it != GameType.BETTING && it != GameType.BLACKJACK }) {
+            val other = def(type)
+            assertEquals(0.0, other.engine.minimumStake(other), "$type 은 판돈이 없다")
+        }
+    }
 }

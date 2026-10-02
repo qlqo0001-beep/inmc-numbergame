@@ -131,6 +131,8 @@ object BlackjackEngine : GameEngine {
 
     override fun timeLimitSeconds(def: GameDefinition): Long = def.settings[TIME_LIMIT]
 
+    override fun minimumStake(def: GameDefinition): Double = def.settings[MIN_BET]
+
     override fun screen(def: GameDefinition, session: Session): Screen {
         val state = session.state as? State ?: return Screen(def.displayName, listOf("준비 중..."))
         val body = mutableListOf<String>()

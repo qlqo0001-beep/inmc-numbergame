@@ -113,6 +113,12 @@ class GameService(private val ng: Ng) {
             ng.plays.explain(player, def, denial)
             return
         }
+        // 판 안에서 거는 게임 — 한 판의 최소 판돈(참가비 포함)도 없으면 시작하지 않는다. 시작하면 오늘 횟수가 세진다(테섭 2026-10-02).
+        val stake = def.engine.minimumStake(def)
+        if (stake > 0.0 && ng.economy.isEnabled && ng.economy.balance(player) < stake + def.entry.feeMoney) {
+            ng.messages.send(player, "entry-need-stake", Ph.of().game(def.displayName).money(stake))
+            return
+        }
         if (!ng.plays.charge(player, def)) {
             ng.plays.check(player, def)?.let { ng.plays.explain(player, def, it) }
             return

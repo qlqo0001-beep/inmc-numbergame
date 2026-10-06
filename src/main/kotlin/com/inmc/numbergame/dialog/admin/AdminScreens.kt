@@ -77,6 +77,9 @@ class AdminScreens(private val ng: Ng) {
                     dlg.reshow(p) { rootDialog(p) }
                 }
             },
+            dlg.button("<gold>어드민 메뉴로</gold>", "각 플러그인 설정 허브로 돌아갑니다.") { p, _ ->
+                p.performCommand("메뉴 어드민")
+            },
             dlg.backButton(),
         ),
         columns = 2,

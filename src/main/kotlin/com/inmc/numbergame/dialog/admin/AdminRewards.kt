@@ -241,6 +241,7 @@ class AdminRewards(private val ng: Ng) {
                     view.getText("max")?.trim()?.toIntOrNull()?.let { entry.maxAmount = it }
                     view.getText("money")?.trim()?.replace(",", "")?.toDoubleOrNull()
                         ?.let { entry.money = it.coerceAtLeast(0.0) }
+                    view.getText("currency")?.let { entry.currency = if (it == "-") "" else it }
                     view.getText("commands")?.let { raw ->
                         entry.commands = raw.split('|').map { it.trim().removePrefix("/") }
                             .filter { it.isNotEmpty() }.toMutableList()
@@ -272,7 +273,7 @@ class AdminRewards(private val ng: Ng) {
                 },
                 dlg.backButton(),
             ),
-            inputs = listOf(
+            inputs = listOfNotNull(
                 DialogInput.text("chance", Text.renderFlat("확률 (%)"))
                     .initial(Numbers.chance(entry.chance)).maxLength(8).width(240).build(),
                 DialogInput.text("min", Text.renderFlat("최소 수량"))
@@ -281,6 +282,13 @@ class AdminRewards(private val ng: Ng) {
                     .initial(entry.maxAmount.toString()).maxLength(3).width(240).build(),
                 DialogInput.text("money", Text.renderFlat("지급 금액"))
                     .initial(entry.money.toString()).maxLength(16).width(240).build(),
+                // 화폐가 여럿일 때만(2026-10-08). "-" = 기본 화폐.
+                DialogInput.singleOption(
+                    "currency", Text.renderFlat("지급 화폐"),
+                    (listOf("-" to "기본 화폐") + ng.economy.currencies()).map { (id, name) ->
+                        SingleOptionDialogInput.OptionEntry.create(id, Text.renderFlat(name), id == entry.currency.ifBlank { "-" })
+                    },
+                ).width(240).build().takeIf { ng.economy.multiCurrency },
                 DialogInput.text("commands", Text.renderFlat("실행 명령어 ( | 로 구분 )"))
                     .initial(entry.commands.joinToString(" | ")).maxLength(256).width(240).build(),
                 DialogInput.bool("give_item", Text.renderFlat("아이템 지급")).initial(entry.giveItem).build(),

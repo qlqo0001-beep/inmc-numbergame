@@ -377,7 +377,7 @@ class AdminScreens(private val ng: Ng) {
             lines.add("<dark_gray>참가 아이템은 아래 [참가비 아이템] 에서 바꿉니다.</dark_gray>")
         }
 
-        val inputs = listOf(
+        val inputs = listOfNotNull(
             DialogInput.text("daily_limit", Text.renderFlat("일일 플레이 횟수 (0 = 무제한)"))
                 .initial(entry.dailyLimit.toString()).maxLength(6).width(240).build(),
             DialogInput.numberRange("reset_hour", Text.renderFlat("일일 초기화 시각 (시)"), 0f, 23f)
@@ -386,6 +386,13 @@ class AdminScreens(private val ng: Ng) {
                 .initial(Durations.format(entry.cooldownSeconds)).maxLength(24).width(240).build(),
             DialogInput.text("fee_money", Text.renderFlat("참가비 (돈)"))
                 .initial(entry.feeMoney.toString()).maxLength(16).width(240).build(),
+            // 화폐가 여럿일 때만(2026-10-08). "-" = 기본 화폐(빈 id 는 선택지 id 로 못 쓴다).
+            DialogInput.singleOption(
+                "currency", Text.renderFlat("참가비 화폐"),
+                (listOf("-" to "기본 화폐") + ng.economy.currencies()).map { (id, name) ->
+                    SingleOptionDialogInput.OptionEntry.create(id, Text.renderFlat(name), id == entry.currency.ifBlank { "-" })
+                },
+            ).width(240).build().takeIf { ng.economy.multiCurrency },
             DialogInput.text("fee_amount", Text.renderFlat("참가 아이템 개수"))
                 .initial(entry.feeItemAmount.toString()).maxLength(4).width(240).build(),
             DialogInput.bool("refund", Text.renderFlat("실패 시 참가비 환불")).initial(entry.refundOnFail).build(),
@@ -401,6 +408,7 @@ class AdminScreens(private val ng: Ng) {
                     view.getText("cooldown")?.let { entry.cooldownSeconds = Durations.parse(it, 0L) }
                     view.getText("fee_money")?.trim()?.replace(",", "")?.toDoubleOrNull()
                         ?.let { entry.feeMoney = it.coerceAtLeast(0.0) }
+                    view.getText("currency")?.let { entry.currency = if (it == "-") "" else it }
                     view.getText("fee_amount")?.trim()?.toIntOrNull()?.let { entry.feeItemAmount = it }
                     view.getBoolean("refund")?.let { entry.refundOnFail = it }
                     ng.games.markDirty(def)

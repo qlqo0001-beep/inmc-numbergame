@@ -129,7 +129,7 @@ class PlayService(private val ng: Ng) :
     fun charge(player: Player, def: GameDefinition): Boolean {
         val entry = def.entry
         if (entry.feeMoney > 0.0 && ng.economy.isEnabled) {
-            if (!ng.economy.withdraw(player, entry.feeMoney)) return false
+            if (!ng.economy.withdraw(player, entry.feeMoney, entry.currency)) return false
             ng.messages.send(player, "entry-paid-money", Ph.of().money(entry.feeMoney))
         }
         val spec = entry.feeItem
@@ -145,7 +145,7 @@ class PlayService(private val ng: Ng) :
                 // were already pulled, so a failed charge leaves the player exactly as it found
                 // them rather than quietly eating part of the price.
                 if (taken > 0) giveBack(player, spec, taken)
-                if (entry.feeMoney > 0.0) ng.economy.deposit(player, entry.feeMoney)
+                if (entry.feeMoney > 0.0) ng.economy.deposit(player, entry.feeMoney, entry.currency)
                 return false
             }
             ng.messages.send(
@@ -188,7 +188,7 @@ class PlayService(private val ng: Ng) :
         if (!force && !entry.refundOnFail) return
         var refunded = false
         if (entry.feeMoney > 0.0 && ng.economy.isEnabled) {
-            ng.economy.deposit(player, entry.feeMoney)
+            ng.economy.deposit(player, entry.feeMoney, entry.currency)
             refunded = true
         }
         entry.feeItem?.let { spec ->

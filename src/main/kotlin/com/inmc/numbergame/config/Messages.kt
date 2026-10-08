@@ -28,6 +28,10 @@ class Messages(values: Map<String, String>) : MessageCatalog<Ph>(values, DEFAULT
             "usage" to "<gray>/숫자게임 <white>[게임id|랭킹|우편함|도움말|관리|리로드]</white></gray>",
             "reloading" to "<gray>설정을 다시 읽는 중...</gray>",
             "reloaded" to "<green>설정을 다시 읽었습니다. <gray>(게임 {개수}개)</gray></green>",
+            "verify-done" to "<gold>숫자게임 검증</gold> <gray>— 통과 <green>{개수}</green> · 실패 <red>{시도}</red>{기록}</gray>",
+            "verify-failure" to "<red> ✘ {기록}</red>",
+            "verify-skipped" to "<gray> – {기록}</gray>",
+            "verify-report" to "<gray>결과 파일: <white>{기록}</white></gray>",
             "dialog-unsupported" to "<red>이 클라이언트는 다이얼로그를 지원하지 않습니다. 최신 버전으로 접속해주세요.</red>",
 
             "session-resumed" to "<green>{게임이름} 을(를) 이어서 진행합니다.</green>",

@@ -115,7 +115,7 @@ class GameService(private val ng: Ng) {
         }
         // 판 안에서 거는 게임 — 한 판의 최소 판돈(참가비 포함)도 없으면 시작하지 않는다. 시작하면 오늘 횟수가 세진다(테섭 2026-10-02).
         val stake = def.engine.minimumStake(def)
-        if (stake > 0.0 && ng.economy.isEnabled && ng.economy.balance(player) < stake + def.entry.feeMoney) {
+        if (stake > 0.0 && ng.economy.isEnabled && ng.economy.balance(player, def.entry.currency) < stake + def.entry.feeMoney) {
             ng.messages.send(player, "entry-need-stake", Ph.of().game(def.displayName).money(stake))
             return
         }
@@ -227,8 +227,10 @@ class GameService(private val ng: Ng) {
             ng.logger.warning("경제 플러그인이 없어 베팅 정산을 처리하지 못했습니다: " + delta)
             return
         }
-        if (delta > 0.0) ng.economy.deposit(player, delta) else ng.economy.withdraw(player, -delta)
-        session.balance = ng.economy.balance(player)
+        // 판 안에서 거는 돈은 참가비와 같은 화폐(2026-10-08).
+        val currency = ng.games.get(session.gameId)?.entry?.currency.orEmpty()
+        if (delta > 0.0) ng.economy.deposit(player, delta, currency) else ng.economy.withdraw(player, -delta, currency)
+        session.balance = ng.economy.balance(player, currency)
     }
 
     /** Abandons the current game as a loss. Counts against the allowance - it was already spent. */

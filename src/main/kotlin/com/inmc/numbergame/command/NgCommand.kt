@@ -72,6 +72,13 @@ class NgCommand(private val ng: Ng) {
             .then(
                 Commands.literal("관리").requires(::isAdmin)
                     .executes { ctx -> admin(ctx.source.sender) }
+                    // 서버 안 자동 검증(2026-10-08) — 정의·엔진 시작·최소 판돈·일일 횟수·참가 조건·순위판·우편함.
+                    .then(
+                        Commands.literal("검증").executes { ctx ->
+                            (ctx.source.sender as? org.bukkit.entity.Player)?.let { com.inmc.numbergame.verify.Verifier(ng).run(it) }
+                            Command.SINGLE_SUCCESS
+                        },
+                    )
                     .then(
                         Commands.literal("초기화")
                             .then(

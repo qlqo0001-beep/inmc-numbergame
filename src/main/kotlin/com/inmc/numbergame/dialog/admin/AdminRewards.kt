@@ -3,7 +3,7 @@ package com.inmc.numbergame.dialog.admin
 import com.inmc.numbergame.Ng
 import com.inmc.numbergame.game.GameDefinition
 import com.inmc.numbergame.gui.RewardItemMenu
-import com.inmc.numbergame.gui.SingleItemMenu
+import kr.inmc.core.gui.ItemInputMenu
 import kr.inmc.core.reward.GiveMode
 import kr.inmc.core.reward.RankBracket
 import kr.inmc.core.reward.RecordTier
@@ -252,19 +252,21 @@ class AdminRewards(private val ng: Ng) {
                     dlg.back(p)
                 },
                 dlg.button("<white>아이콘 아이템 지정</white>", "명령어 보상에 보여줄 아이템입니다.") { p, _ ->
-                    SingleItemMenu(
-                        ng,
+                    ItemInputMenu(
+                        ng, p,
                         title = "보상 아이템 지정",
                         hint = listOf("<gray>이 보상으로 줄 아이템입니다.</gray>"),
-                        onPick = { picker, stored ->
-                            entry.item = stored
-                            ng.games.markDirty(def)
-                            dlg.reshow(picker) { entryDialog(picker, def, bundle, entry, label) }
+                        submitLabel = "지정",
+                        back = {
+                            p.closeInventory()
+                            dlg.reshow(p) { entryDialog(p, def, bundle, entry, label) }
                         },
-                        onCancel = { canceller ->
-                            dlg.reshow(canceller) { entryDialog(canceller, def, bundle, entry, label) }
-                        },
-                    ).open(p)
+                    ) { stack ->
+                        entry.item = ng.itemResolver.capture(stack)
+                        ng.games.markDirty(def)
+                        p.closeInventory()
+                        dlg.reshow(p) { entryDialog(p, def, bundle, entry, label) }
+                    }.show()
                 },
                 dlg.button("<red>이 보상 삭제</red>") { p, _ ->
                     bundle.entries.remove(entry)
@@ -485,26 +487,31 @@ class AdminRewards(private val ng: Ng) {
 
     fun openFeeItemMenu(player: Player, def: GameDefinition) {
         dlg.close(player)
-        SingleItemMenu(
-            ng,
+        ItemInputMenu(
+            ng, player,
             title = "참가비 아이템 지정",
             hint = listOf(
                 "<gray>게임을 시작할 때 소모할 아이템입니다.</gray>",
                 "<gray>개수는 참가 조건 화면에서 정합니다.</gray>",
             ),
-            onPick = { picker, stored ->
-                // 커스텀아이템이 있으면 그리로(바닐라 그대로인 것은 제외) — 커스텀아이템의 "참가 아이템" 역할에서도 보인다.
-                if (!com.inmc.numbergame.play.NgRoles.set(ng, def, stored)) {
-                    def.entry.feeItem = stored
-                    ng.games.markDirty(def)
-                }
-                picker.sendMessage(
-                    Text.render("<green>참가비 아이템을 " + stored.label() + " 로 지정했습니다.</green>", null, picker)
-                )
-                dlg.reshow(picker) { ng.admin.gameDialog(picker, def) }
+            submitLabel = "지정",
+            back = {
+                player.closeInventory()
+                dlg.reshow(player) { ng.admin.gameDialog(player, def) }
             },
-            onCancel = { canceller -> dlg.reshow(canceller) { ng.admin.gameDialog(canceller, def) } },
-        ).open(player)
+        ) { stack ->
+            val stored = ng.itemResolver.capture(stack)
+            player.closeInventory()
+            // 커스텀아이템이 있으면 그리로(바닐라 그대로인 것은 제외) — 커스텀아이템의 "참가 아이템" 역할에서도 보인다.
+            if (!com.inmc.numbergame.play.NgRoles.set(ng, def, stored)) {
+                def.entry.feeItem = stored
+                ng.games.markDirty(def)
+            }
+            player.sendMessage(
+                Text.render("<green>참가비 아이템을 " + stored.label() + " 로 지정했습니다.</green>", null, player)
+            )
+            dlg.reshow(player) { ng.admin.gameDialog(player, def) }
+        }.show()
     }
 
     private companion object {

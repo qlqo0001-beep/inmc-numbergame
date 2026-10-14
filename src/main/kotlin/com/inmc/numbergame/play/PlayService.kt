@@ -157,22 +157,28 @@ class PlayService(private val ng: Ng) :
     }
 
     /**
-     * Returns [amount] copies of a fee item, dropping whatever will not fit.
+     * Returns [amount] copies of a fee item; whatever will not fit goes to the mail, or the ground.
      *
      * Rebuilt from the stored reference rather than kept aside, which is the same route a reward
      * takes - so a MMOItems fee comes back as a live item rather than a stale copy.
      */
     private fun giveBack(player: Player, spec: kr.inmc.core.item.StoredItem, amount: Int) {
+        val leftover = mutableListOf<org.bukkit.inventory.ItemStack>()
         var left = amount
         while (left > 0) {
-            val stack = ng.itemResolver.create(spec, left) ?: return
+            val stack = ng.itemResolver.create(spec, left) ?: break
             left -= stack.amount
-            player.inventory.addItem(stack).values.forEach {
-                player.world.dropItemNaturally(player.location, it)
-            }
+            leftover += player.inventory.addItem(stack).values
             // create() clamps to the stack size, so a large refund needs more than one pass.
-            if (stack.amount <= 0) return
+            if (stack.amount <= 0) break
         }
+        if (leftover.isEmpty()) return
+        // 가방이 차면 바닥 대신 우편으로(사용자 결정 2026-10-10). 우편 공급처가 없거나 넣지 못했으면 전처럼 발밑에 — 한쪽만.
+        if (kr.inmc.core.integration.Mail.send(player.uniqueId, ng.plugin.name, "숫자게임 참가비 반환", leftover)) {
+            ng.messages.send(player, "reward-inventory-full")
+            return
+        }
+        leftover.forEach { player.world.dropItemNaturally(player.location, it) }
     }
 
     /**

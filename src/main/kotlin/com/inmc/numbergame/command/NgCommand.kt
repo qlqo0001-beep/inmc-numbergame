@@ -11,6 +11,7 @@ import com.mojang.brigadier.suggestion.SuggestionProvider
 import io.papermc.paper.command.brigadier.CommandSourceStack
 import io.papermc.paper.command.brigadier.Commands
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
+import kr.inmc.core.integration.Vanish
 import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
@@ -44,9 +45,9 @@ class NgCommand(private val ng: Ng) {
         builder.buildFuture()
     }
 
-    private val onlineNames = SuggestionProvider<CommandSourceStack> { _, builder ->
-        Bukkit.getOnlinePlayers()
-            .map { it.name }
+    // 투명인 사람은 이름이 새지 않게 보이는 사람만 제안한다(2026-10-10).
+    private val onlineNames = SuggestionProvider<CommandSourceStack> { ctx, builder ->
+        Vanish.visibleNames(ctx.source.sender)
             .filter { it.startsWith(builder.remainingLowerCase, ignoreCase = true) }
             .forEach { builder.suggest(it) }
         builder.buildFuture()

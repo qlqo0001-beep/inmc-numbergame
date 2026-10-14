@@ -2,6 +2,7 @@ package com.inmc.numbergame.integration
 
 import com.inmc.numbergame.Ng
 import com.inmc.numbergame.game.GameDefinition
+import kr.inmc.core.integration.Vanish
 import kr.inmc.core.util.Durations
 import kr.inmc.core.util.Text
 import me.clip.placeholderapi.PlaceholderAPI
@@ -60,14 +61,59 @@ private class NgExpansion(private val ng: Ng) : PlaceholderExpansion() {
 
     override fun persist(): Boolean = true
 
+    /**
+     * PAPI 목록용 — [onRequest] 가 답하는 이름 전부. 고정 셋([global]) + 지금 있는 게임마다 [perGame] 과 순위 1~[TOP_LISTED].
+     * 목록과 답하는 쪽이 **같은 표**를 읽어서 이름이 어긋날 수 없다. `top_value_N` 은 `top_score_N` 의 별칭이라 뺐다.
+     */
+    override fun getPlaceholders(): List<String> {
+        val keys = global.keys.toMutableList()
+        for (id in ng.games.ids()) {
+            for (suffix in perGame.keys) keys += id + "_" + suffix
+            for (n in 1..TOP_LISTED) keys += listOf(id + "_top_name_" + n, id + "_top_score_" + n)
+        }
+        return keys.map { "%" + identifier + "_" + it + "%" }
+    }
+
+    /** 게임과 상관없는 것. 이름은 대소문자를 가리지 않는다. */
+    private val global: Map<String, (Player?) -> String> = linkedMapOf(
+        "game_count" to { _ -> ng.games.enabled().size.toString() },
+        "mailbox_count" to { online -> (online?.let { ng.mailbox.countOf(it.uniqueId) } ?: 0).toString() },
+        // 투명인 사람의 판은 그를 볼 수 있는 사람에게만 센다(2026-10-10) — 전광판·홀로그램(요청자 없음)에서는 뺀다.
+        "playing" to { online ->
+            ng.sessions.all().count { session ->
+                Bukkit.getPlayer(session.playerId)?.let { Vanish.canSee(online, it) } ?: true
+            }.toString()
+        },
+    )
+
+    /**
+     * `<game>_<suffix>`. 순서가 곧 검사 순서다 — `my_rank_alltime` 이 `my_rank` 보다 먼저.
+     */
+    private val perGame: Map<String, (GameDefinition, Player?) -> String> = linkedMapOf(
+        "my_rank_alltime" to { def, online ->
+            online?.let { ng.ranks.rankOf(def, it.uniqueId, allTime = true)?.toString() } ?: "-"
+        },
+        "my_rank" to { def, online -> online?.let { ng.ranks.rankOf(def, it.uniqueId)?.toString() } ?: "-" },
+        "my_best" to { def, online ->
+            val entry = online?.let { ng.ranks.boardsOf(def.id).season.entryOf(it.uniqueId) }
+            if (entry == null || !entry.hasRecord) "-" else entry.best.toString()
+        },
+        "my_score" to { def, online ->
+            (online?.let { ng.ranks.boardsOf(def.id).season.entryOf(it.uniqueId)?.score } ?: 0L).toString()
+        },
+        "plays_left" to { def, online -> online?.let { ng.plays.remaining(it.uniqueId, def) }?.toString() ?: "-" },
+        "season" to { def, _ -> ng.ranks.boardsOf(def.id).seasonNumber.toString() },
+        "next_reset" to { def, _ ->
+            val next = ng.ranks.nextResetAt(def)
+            if (next <= 0L) "-"
+            else Durations.formatShort(((next - System.currentTimeMillis()) / 1000L).coerceAtLeast(0L))
+        },
+    )
+
     override fun onRequest(player: OfflinePlayer?, params: String): String? {
         val online = player as? Player ?: player?.uniqueId?.let { Bukkit.getPlayer(it) }
 
-        if (params.equals("game_count", true)) return ng.games.enabled().size.toString()
-        if (params.equals("mailbox_count", true)) {
-            return (online?.let { ng.mailbox.countOf(it.uniqueId) } ?: 0).toString()
-        }
-        if (params.equals("playing", true)) return ng.sessions.size.toString()
+        global.entries.firstOrNull { params.equals(it.key, true) }?.let { return it.value(online) }
 
         // Everything else is "<game>_<what>". Game ids may themselves contain `_`, so the
         // known suffix is stripped from the end rather than splitting on the first underscore.
@@ -78,11 +124,11 @@ private class NgExpansion(private val ng: Ng) : PlaceholderExpansion() {
             return topOf(params.dropLast(match.value.length), match.groupValues[1], name = false)
         }
 
-        for (suffix in SUFFIXES) {
+        for ((suffix, resolve) in perGame) {
             if (!params.endsWith("_" + suffix, ignoreCase = true)) continue
             val gameId = params.dropLast(suffix.length + 1)
             val def = ng.games.get(gameId) ?: continue
-            return resolve(def, suffix, online)
+            return resolve(def, online)
         }
         return null
     }
@@ -96,41 +142,9 @@ private class NgExpansion(private val ng: Ng) : PlaceholderExpansion() {
         return if (name) entry.name else ng.ranks.formatValue(def, entry)
     }
 
-    private fun resolve(def: GameDefinition, suffix: String, online: Player?): String? =
-        when (suffix) {
-            "my_rank" -> online?.let { ng.ranks.rankOf(def, it.uniqueId)?.toString() } ?: "-"
-
-            "my_rank_alltime" ->
-                online?.let { ng.ranks.rankOf(def, it.uniqueId, allTime = true)?.toString() } ?: "-"
-
-            "my_best" -> {
-                val entry = online?.let { ng.ranks.boardsOf(def.id).season.entryOf(it.uniqueId) }
-                if (entry == null || !entry.hasRecord) "-" else entry.best.toString()
-            }
-
-            "my_score" ->
-                (online?.let { ng.ranks.boardsOf(def.id).season.entryOf(it.uniqueId)?.score } ?: 0L).toString()
-
-            "plays_left" -> {
-                val left = online?.let { ng.plays.remaining(it.uniqueId, def) }
-                left?.toString() ?: "-"
-            }
-
-            "season" -> ng.ranks.boardsOf(def.id).seasonNumber.toString()
-
-            "next_reset" -> {
-                val next = ng.ranks.nextResetAt(def)
-                if (next <= 0L) "-"
-                else Durations.formatShort(((next - System.currentTimeMillis()) / 1000L).coerceAtLeast(0L))
-            }
-
-            else -> null
-        }
-
     private companion object {
-        val SUFFIXES = listOf(
-            "my_rank_alltime", "my_rank", "my_best", "my_score", "plays_left", "season", "next_reset",
-        )
+        /** PAPI 목록에 싣는 순위 칸 수. 답은 그 밖의 순위도 한다. */
+        const val TOP_LISTED = 10
         val TOP_NAME = Regex("_top_name_(\\d+)$")
         val TOP_VALUE = Regex("_top_(?:score|value)_(\\d+)$")
     }

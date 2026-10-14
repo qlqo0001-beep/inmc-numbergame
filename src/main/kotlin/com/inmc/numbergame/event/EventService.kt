@@ -4,6 +4,7 @@ import com.inmc.numbergame.Ng
 import com.inmc.numbergame.game.GameDefinition
 import com.inmc.numbergame.game.GameType
 import kr.inmc.core.rank.Outcome
+import kr.inmc.core.integration.Vanish
 import com.inmc.numbergame.game.engine.LottoEngine
 import com.inmc.numbergame.game.engine.UniqueBidEngine
 import kr.inmc.core.store.YamlFileStore
@@ -337,13 +338,35 @@ class EventService(private val ng: Ng) :
                 if (price > 0.0 && ng.economy.isEnabled) ng.economy.deposit(online, price)
                 ng.plays.refund(online, def, force = true)
                 ng.messages.send(online, "event-voided", Ph.of().game(def.displayName))
-            } else if (price > 0.0) {
-                // Offline: only the money can be posted back. An item fee cannot be rebuilt into
-                // a mailbox entry from here without the player, so it is left alone.
-                val payout = kr.inmc.core.reward.RewardService.Payout(money = price)
-                ng.rewards.mail(entry.playerId, payout, def.displayName + " · 참가비 환불")
+            } else {
+                // 오프라인: 접속해 있었다면 돌려받았을 것(표 값 + 참가 조건의 돈·아이템) 전부를 우편 한 통으로(2026-10-10).
+                // 예전에는 표 값만 부쳐 참가비와 참가 아이템이 사라졌다. 빈 우편은 mail() 이 건너뛴다.
+                ng.rewards.mail(entry.playerId, offlineRefund(def, price), def.displayName + " · 참가비 환불")
             }
         }
+    }
+
+    /** [refundAll] 의 오프라인 몫 — [com.inmc.numbergame.play.PlayService.refund] (force) 와 같은 것을 우편 한 통에 담는다. */
+    private fun offlineRefund(def: GameDefinition, price: Double): kr.inmc.core.reward.RewardService.Payout {
+        // 표 값도 참가비도 이코노미가 있을 때만 걷었다(enter·PlayService.charge) — 접속 쪽과 같이 그때만 돌려준다.
+        val economy = ng.economy.isEnabled
+        val payout = kr.inmc.core.reward.RewardService.Payout(money = if (economy) price.coerceAtLeast(0.0) else 0.0)
+        val fee = def.entry
+        if (fee.feeMoney > 0.0 && economy) {
+            if (fee.currency.isBlank()) payout.money += fee.feeMoney
+            else payout.moneyBy.merge(fee.currency, fee.feeMoney, Double::plus)
+        }
+        fee.feeItem?.let { spec ->
+            var left = fee.feeItemAmount
+            while (left > 0) {
+                // create() 는 한 묶음 크기로 자른다 — 여러 번 만든다. 원본 플러그인이 없으면 null 이라 거기서 멈춘다.
+                val stack = ng.itemResolver.create(spec, left) ?: break
+                if (stack.amount <= 0) break
+                left -= stack.amount
+                payout.stacks += stack
+            }
+        }
+        return payout
     }
 
     private fun broadcast(
@@ -364,7 +387,15 @@ class EventService(private val ng: Ng) :
             .count(round.number)
             .player(winner?.name ?: "없음")
             .record(if (round.result.isEmpty()) "-" else LottoEngine.format(round.result))
-        Bukkit.getServer().sendMessage(ng.messages.component("event-drawn", ph))
+        val message = ng.messages.component("event-drawn", ph)
+        // 투명인 당첨자의 이름은 그를 볼 수 있는 사람(본인·권한자·콘솔)에게만 — 투명이 공지로 새지 않게(2026-10-10).
+        val shown = winner?.let { Bukkit.getPlayer(it.playerId) }
+        if (shown == null || !Vanish.isVanished(shown)) {
+            Bukkit.getServer().sendMessage(message)
+            return
+        }
+        Bukkit.getConsoleSender().sendMessage(message)
+        Bukkit.getOnlinePlayers().filter { Vanish.canSee(it, shown) }.forEach { it.sendMessage(message) }
     }
 
     // --- description helpers ---------------------------------------------------
